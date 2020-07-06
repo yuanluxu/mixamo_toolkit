@@ -38,7 +38,7 @@ def get_product_content():
     try:
         har = proxy.new_har(str(product_id), options={'captureContent':True, 'captureBinaryContent':True})
         product_info = product.text
-        print(product_id, product_info)
+        print("\rSeq ID: {}, name: {}".format(product_id, product_info.split('\n')[0]), end="")
         if "Pack" in product_info:
             product_id +=1
             return "OK" 
@@ -95,7 +95,7 @@ def mixamo_login(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Mixamo Website crawler')
     parser.add_argument('--email', type=str, help='email account to sign in')
-    parser.add_argument('--password', type=str, help='account password to sign in')
+    # parser.add_argument('--password', type=str, help='account password to sign in')
     args = parser.parse_args()
 
     if platform.system() == "Linux":
@@ -113,6 +113,7 @@ if __name__ == "__main__":
     mixamo_login(args)
     product_id = 0
     for page_number in range(1, 53):
+        print("Downloading animation on page {}".format(page_number))
         chrome.get('https://www.mixamo.com/#/?page={}&query=&type=Motion%2CMotionPack'.format(page_number))
         try:
             element = WebDriverWait(chrome, 10).until(
@@ -120,11 +121,12 @@ if __name__ == "__main__":
             )
             products = chrome.find_elements_by_class_name('product-info')
             for product in products:
-                i = 0
-                while i < 30:
+                trial = 0
+                while trial < 30:
                     result = get_product_content()
                     if result == "OK" or result == "KeyError":
                         break
-                    i += 1
+                    trial += 1
+                print("")
         except:
             raise
