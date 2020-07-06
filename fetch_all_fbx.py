@@ -34,11 +34,11 @@ def choose_fname(product_info):
 
 
 def get_product_content():
-    global chrome, product_id, proxy, product
+    global chrome, page_number, product_id, proxy, product
     try:
         har = proxy.new_har(str(product_id), options={'captureContent':True, 'captureBinaryContent':True})
         product_info = product.text
-        print("\rSeq ID: {}, name: {}".format(product_id, product_info.split('\n')[0]), end="")
+        print("\rSeq ID: {}, page {}, name: {}".format(product_id, page_number, product_info.split('\n')[0]), end="")
         if "Pack" in product_info:
             product_id +=1
             return "OK" 
