@@ -33,18 +33,18 @@ def choose_fname(product_info):
     return "output/{} ({}).json".format(product_name, j)
 
 
-def get_product_content():
-    global chrome, page_number, product_id, proxy, product
+def fetch_animation():
+    global chrome, page_number, seq_id, proxy, animation
     try:
-        har = proxy.new_har(str(product_id), options={'captureContent':True, 'captureBinaryContent':True})
-        product_info = product.text
-        print("\rSeq ID: {}, page {}, name: {}".format(product_id, page_number, product_info.split('\n')[0]), end="")
-        if "Pack" in product_info:
-            product_id +=1
+        har = proxy.new_har(str(seq_id), options={'captureContent':True, 'captureBinaryContent':True})
+        animation_info = animation.text
+        print("\rTry fetching seq ID: {}, name: {}".format(seq_id, animation_info.split('\n')[0]), end="")
+        if "Pack" in animation_info:
+            seq_id +=1
             return "OK" 
-        product.click()
-        elenemt = WebDriverWait(chrome, 2).until(EC.presence_of_element_located((By.CLASS_NAME, "editor-loading-screen")))
-        element = WebDriverWait(chrome, 60).until(EC.invisibility_of_element_located((By.CLASS_NAME, "editor-loading-screen")))
+        animation.click()
+        # element = WebDriverWait(chrome, 2).until(EC.presence_of_element_located((By.CLASS_NAME, "editor-loading-screen")))
+        # element = WebDriverWait(chrome, 60).until(EC.invisibility_of_element_located((By.CLASS_NAME, "editor-loading-screen")))
         download = WebDriverWait(chrome, 60).until(EC.presence_of_element_located((By.XPATH, "//button[contains(.,'Download')]")))
         time.sleep(1)
         download.click()
@@ -54,19 +54,18 @@ def get_product_content():
         time.sleep(3)
         download.click()
         time.sleep(10)                
-        product_id += 1
+        seq_id += 1
         return "OK"
     except AssertionError:
-        return get_product_content()
+        return "AssertionError"
     except IndexError:
-        print(fname)
-        return "IndexError"
+        return "IndexError: {}".format(fname)
     except KeyError:
         return "KeyError"
     except TimeoutException:
         return "TimeoutException"
     except:
-        return "exception"  
+        return "Exception"  
 
 
 def mixamo_login(args):
@@ -93,9 +92,10 @@ def mixamo_login(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Mixamo Website crawler')
+    parser = argparse.ArgumentParser(description='Mixamo website animation crawler')
     parser.add_argument('--email', type=str, help='email account to sign in')
     # parser.add_argument('--password', type=str, help='account password to sign in')
+    parser.add_argument('--num_trial', type=int, default=50, help='maximum number of trials for fetch an animation')
     args = parser.parse_args()
 
     if platform.system() == "Linux":
@@ -111,19 +111,19 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(options=options)
     chrome = webdriver.Chrome('chromedriver', chrome_options=options)
     mixamo_login(args)
-    product_id = 0
+    seq_id = 0
     for page_number in range(1, 53):
         print("Downloading animation on page {}".format(page_number))
         chrome.get('https://www.mixamo.com/#/?page={}&query=&type=Motion%2CMotionPack'.format(page_number))
         try:
-            element = WebDriverWait(chrome, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, 'product-info'))
-            )
-            products = chrome.find_elements_by_class_name('product-info')
-            for product in products:
+            # element = WebDriverWait(chrome, 30).until(
+            #     EC.presence_of_element_located((By.CLASS_NAME, 'product-info'))
+            # )
+            animations = chrome.find_elements_by_class_name('product-info')
+            for animation in animations:
                 trial = 0
-                while trial < 30:
-                    result = get_product_content()
+                while trial < args.num_trial:
+                    result = fetch_animation()
                     if result == "OK" or result == "KeyError":
                         break
                     trial += 1
