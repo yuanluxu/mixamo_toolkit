@@ -92,7 +92,7 @@ def mixamo_login(args):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Mixamo website animation crawler')
+    parser = argparse.ArgumentParser(description='Toolkit for fetching animations from Mixamo website')
     parser.add_argument('--email', type=str, help='email account to sign in')
     # parser.add_argument('--password', type=str, help='account password to sign in')
     parser.add_argument('--num_trial', type=int, default=50, help='maximum number of trials for fetch an animation')
